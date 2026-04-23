@@ -7,6 +7,8 @@ info:
     A digital music store API. Authenticated users can browse songs, place orders, and post comments.
     Admins manage the song catalogue.
 
+    **Authentication:** Use `POST /api/auth/login` to obtain a JWT token, then click the **Authorize** button and enter `Bearer <your-token>`.
+
 servers:
   - url: /api
 
