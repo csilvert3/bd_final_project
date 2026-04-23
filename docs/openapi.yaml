@@ -711,7 +711,7 @@ components:
       description: "Field to sort by"
       schema:
         type: string
-        enum: [id, title, artist, price, createdAt]
+        enum: [id, title, artist, price, createdAt, invalidField]
         default: id
         example: "price"
 
@@ -722,7 +722,7 @@ components:
       description: "Sort order: asc or desc"
       schema:
         type: string
-        enum: [asc, desc]
+        enum: [asc, desc, invalidField]
         default: asc
         example: "asc"
 
