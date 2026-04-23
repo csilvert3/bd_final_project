@@ -65,9 +65,9 @@ try {
 
   await prisma.comment.createMany({
     data: [
-      { userId: alice.id, songId: songs[0].id, body: 'Absolute banger!', rating: 5 },
+      { userId: alice.id, songId: songs[1].id, body: 'Absolute banger!', rating: 5 },
       { userId: alice.id, songId: songs[1].id, body: 'Great song to work out to.', rating: 4 },
-      { userId: admin.id, songId: songs[0].id, body: 'Plays on repeat everyday.', rating: 5 },
+      { userId: admin.id, songId: songs[3].id, body: 'Plays on repeat everyday.', rating: 5 },
       { userId: admin.id, songId: songs[2].id, body: 'Catchy but gets old fast.', rating: 3 },
     ],
   });
