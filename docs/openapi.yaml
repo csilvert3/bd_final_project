@@ -571,45 +571,45 @@ components:
     Song:
       type: object
       properties:
-        id:         { type: integer, readOnly: true, example: 1 }
-        title:      { type: string,  example: "Blinding Lights" }
-        artist:     { type: string,  example: "The Weeknd" }
-        album:      { type: string,  nullable: true, example: "After Hours" }
-        genre:      { type: string,  nullable: true, example: "Pop" }
-        price:      { type: string,  example: "1.29" }
-        durationS:  { type: integer, nullable: true, example: 200 }
-        createdAt:  { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
+        id: { type: integer, readOnly: true, example: 1 }
+        title: { type: string, example: "Blinding Lights" }
+        artist: { type: string, example: "The Weeknd" }
+        album: { type: string, nullable: true, example: "After Hours" }
+        genre: { type: string, nullable: true, example: "Pop" }
+        price: { type: string, example: "1.29" }
+        durationS: { type: integer, nullable: true, example: 200 }
+        createdAt: { type: string, format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
 
     SongInput:
       type: object
       required: [title, artist, price]
       properties:
-        title:      { type: string,  example: "New Song" }
-        artist:     { type: string,  example: "Some Artist" }
-        album:      { type: string,  example: "Some Album" }
-        genre:      { type: string,  example: "Pop" }
-        price:      { type: number,  example: 1.29 }
-        durationS:  { type: integer, example: 210 }
+        title: { type: string, example: "New Song" }
+        artist: { type: string, example: "Some Artist" }
+        album: { type: string, example: "Some Album" }
+        genre: { type: string, example: "Pop" }
+        price: { type: number, example: 1.29 }
+        durationS: { type: integer, example: 210 }
 
     SongUpdateInput:
       type: object
       description: At least one field should be provided.
       properties:
-        title:      { type: string,  example: "Updated Title" }
-        artist:     { type: string,  example: "Updated Artist" }
-        album:      { type: string,  example: "Updated Album" }
-        genre:      { type: string,  example: "Updated Genre" }
-        price:      { type: number,  example: 0.99 }
-        durationS:  { type: integer, example: 195 }
+        title: { type: string, example: "Updated Title" }
+        artist: { type: string, example: "Updated Artist" }
+        album: { type: string, example: "Updated Album" }
+        genre: { type: string, example: "Updated Genre" }
+        price: { type: number, example: 0.99 }
+        durationS: { type: integer, example: 195 }
 
     Order:
       type: object
       properties:
-        id:         { type: integer, readOnly: true, example: 1 }
-        userId:     { type: integer, readOnly: true, example: 1 }
-        totalPrice: { type: string,  example: "2.58" }
-        status:     { type: string,  enum: [PENDING, COMPLETED, CANCELLED], example: "PENDING" }
-        createdAt:  { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
+        id: { type: integer, readOnly: true, example: 1 }
+        userId: { type: integer, readOnly: true, example: 1 }
+        totalPrice: { type: string, example: "2.58" }
+        status: { type: string, enum: [PENDING, COMPLETED, CANCELLED], example: "PENDING" }
+        createdAt: { type: string, format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
         items:
           type: array
           items:
@@ -618,20 +618,20 @@ components:
     OrderItem:
       type: object
       properties:
-        id:       { type: integer, example: 1 }
+        id: { type: integer, example: 1 }
         orderId:  { type: integer, example: 1 }
-        songId:   { type: integer, example: 1 }
-        price:    { type: string,  example: "1.29" }
-        song:     { $ref: '#/components/schemas/Song' }
+        songId: { type: integer, example: 1 }
+        price: { type: string,  example: "1.29" }
+        song: { $ref: '#/components/schemas/Song' }
 
     Comment:
       type: object
       properties:
-        id:        { type: integer, readOnly: true, example: 1 }
-        userId:    { type: integer, readOnly: true, example: 1 }
-        songId:    { type: integer, example: 1 }
-        body:      { type: string,  example: "Absolute banger!" }
-        rating:    { type: integer, nullable: true, minimum: 1, maximum: 5, example: 5 }
+        id: { type: integer, readOnly: true, example: 1 }
+        userId: { type: integer, readOnly: true, example: 1 }
+        songId: { type: integer, example: 1 }
+        body: { type: string,  example: "Absolute banger!" }
+        rating: { type: integer, nullable: true, minimum: 1, maximum: 5, example: 5 }
         createdAt: { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
 
     CommentInput:
@@ -639,28 +639,28 @@ components:
       required: [songId, body]
       properties:
         songId: { type: integer, example: 1 }
-        body:   { type: string,  example: "Great song!" }
-        rating: { type: integer, nullable: true, minimum: 1, maximum: 5, example: 5 }
+        body: { type: string,  example: "Great song!" }
+        rating: { type: integer, nullable: true, example: 5 }
 
     CommentUpdateInput:
       type: object
       properties:
-        body:   { type: string,  example: "Updated review." }
-        rating: { type: integer, nullable: true, minimum: 1, maximum: 5, example: 4 }
+        body: { type: string,  example: "Updated review." }
+        rating: { type: integer, nullable: true, example: 4 }
 
     AuthCredentials:
       type: object
       required: [email, password]
       properties:
-        email:    { type: string, format: email, example: "alice@test.com" }
-        password: { type: string, minLength: 8,  example: "alice1234" }
+        email: { type: string, format: email, example: "alice@test.com" }
+        password: { type: string, example: "alice1234" }
 
     User:
       type: object
       properties:
-        id:    { type: integer, readOnly: true, example: 1 }
-        email: { type: string,  example: "alice@test.com" }
-        role:  { type: string,  enum: [USER, ADMIN], example: "USER" }
+        id: { type: integer, readOnly: true, example: 1 }
+        email: { type: string, example: "alice@test.com" }
+        role: { type: string, enum: [USER, ADMIN], example: "USER" }
 
     ErrorSingle:
       type: object
@@ -681,7 +681,7 @@ components:
       in: path
       required: true
       description: Resource ID (positive integer)
-      schema: { type: integer, minimum: 1, example: 1 }
+      schema: { type: integer, example: 1 }
 
     search:
       name: search
@@ -731,14 +731,14 @@ components:
       in: query
       required: false
       description: Number of records to skip (pagination)
-      schema: { type: integer, minimum: 0, default: 0, example: 0 }
+      schema: { type: integer }
 
     limit:
       name: limit
       in: query
       required: false
-      description: Max records to return (1–50)
-      schema: { type: integer, minimum: 1, maximum: 50, default: 10, example: 10 }
+      description: Max records to return (1-50)
+      schema: { type: integer }
 
   responses:
     NotFound:

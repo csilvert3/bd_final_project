@@ -25,6 +25,8 @@ try {
     { title: 'Levitating', artist: 'Dua Lipa', album: 'Future Nostalgia', genre: 'Pop', price: 1.29, durationS: 203 },
     { title: 'Peaches', artist: 'Justin Bieber',album: 'Justice', genre: 'R&B', price: 0.99, durationS: 198 },
     { title: 'Stay', artist: 'Kid Laroi', album: null, genre: 'Pop', price: 0.99, durationS: 141 },
+    { title: 'As It Was', artist: 'Harry Styles', album: 'Harry\'s House', genre: 'Pop', price: 1.29, durationS: 167 },
+    { title: 'Heat Waves', artist: 'Glass Animals', album: 'Dreamland', genre: 'Indie Pop', price: 0.99, durationS: 238 },
   ];
 
   const songs = [];

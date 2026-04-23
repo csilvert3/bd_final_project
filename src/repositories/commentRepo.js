@@ -1,6 +1,7 @@
 import prisma from '../config/db.js';
  
 export async function getAll(songId) {
+  console.log('songId received:', songId, typeof songId);
   const where = songId ? { songId: parseInt(songId) } : {};
   return prisma.comment.findMany({
     where,
