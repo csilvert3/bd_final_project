@@ -27,7 +27,7 @@ export const validateCreateComment = [
   body('rating')
     .optional()
     .isInt({ min: 1, max: 5 })
-    .withMessage('rRating must be an integer between 1 and 5'),
+    .withMessage('Rating must be an integer between 1 and 5'),
 
   handleValidationErrors,
 ];
