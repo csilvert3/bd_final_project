@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  orders    Order[]
+  comments  Comment[]
+
+  @@map("users")
+}
+
+model Song {
+  id          Int          @id @default(autoincrement())
+  title       String
+  artist      String
+  album       String?
+  genre       String?
+  price       Float
+  durationS   Int?         @map("duration_s")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  orderItems  OrderItem[]
+  comments    Comment[]
+
+  @@map("songs")
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int         @map("user_id")
+  totalPrice  Float       @map("total_price")
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  items       OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id      Int     @id @default(autoincrement())
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId Int     @map("order_id")
+  song    Song    @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId  Int     @map("song_id")
+  price   Float
+
+  @@map("order_items")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId    Int      @map("song_id")
+  body      String
+  rating    Int?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("comments")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}

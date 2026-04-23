@@ -1,0 +1,816 @@
+openapi: 3.0.3
+ 
+info:
+  title: SoundVault API
+  version: 1.0.0
+  description: |
+    A digital music store API. Authenticated users can browse songs, place orders, and post comments.
+    Admins manage the song catalogue.
+
+servers:
+  - url: /api
+
+tags:
+  - name: Auth
+    description: User authentication
+  - name: Songs
+    description: Song catalogue management
+  - name: Orders
+    description: Purchase orders
+  - name: Comments
+    description: Song comments and ratings
+
+paths:
+
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthCredentials'
+            example:
+              email: "newuser@example.com"
+              password: "password123"
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                id: 4
+                email: "newuser@example.com"
+                role: "USER"
+        '400':
+          $ref: '#/components/responses/InvalidUserInput'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive a JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthCredentials'
+            example:
+              email: "alice@test.com"
+              password: "alice1234"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          $ref: '#/components/responses/InvalidUserInput'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSingle'
+              example:
+                error: "Invalid credentials"
+
+  /songs:
+    get:
+      tags: [Songs]
+      summary: Get all songs
+      description: Public. Supports search, filter, sort and pagination.
+      parameters:
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/genre'
+        - $ref: '#/components/parameters/artist'
+        - $ref: '#/components/parameters/sortBy'
+        - $ref: '#/components/parameters/order'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: List of songs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Song'
+              example:
+                - id: 1
+                  title: "Blinding Lights"
+                  artist: "The Weeknd"
+                  album: "After Hours"
+                  genre: "Pop"
+                  price: "1.29"
+                  durationS: 200
+                  createdAt: "2026-04-01T00:00:00Z"
+        '400':
+          $ref: '#/components/responses/InvalidQueryParams'
+
+    post:
+      tags: [Songs]
+      summary: Add a new song
+      description: Admin only.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongInput'
+            example:
+              title: "New Song"
+              artist: "Some Artist"
+              album: "Some Album"
+              genre: "Pop"
+              price: 1.29
+              durationS: 210
+      responses:
+        '201':
+          description: Song created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          $ref: '#/components/responses/InvalidSongInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /songs/{id}:
+    get:
+      tags: [Songs]
+      summary: Get a song by ID
+      description: Public.
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: A single song
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+              example:
+                id: 1
+                title: "Blinding Lights"
+                artist: "The Weeknd"
+                album: "After Hours"
+                genre: "Pop"
+                price: "1.29"
+                durationS: 200
+                createdAt: "2026-04-01T00:00:00Z"
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Songs]
+      summary: Update a song
+      description: Admin only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongUpdateInput'
+            example:
+              price: 0.99
+              genre: "Synth-pop"
+      responses:
+        '200':
+          description: Song updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          $ref: '#/components/responses/InvalidSongInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Songs]
+      summary: Delete a song
+      description: Admin only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: Song deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Song deleted successfully"
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /orders:
+    get:
+      tags: [Orders]
+      summary: Get orders
+      description: Returns own orders (regular users) or all orders (admin).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Orders]
+      summary: Create an order
+      description: Authenticated users. Provide an array of song IDs.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [songIds]
+              properties:
+                songIds:
+                  type: array
+                  items:
+                    type: integer
+            example:
+              songIds: [1, 2]
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              example:
+                id: 3
+                userId: 1
+                totalPrice: "2.58"
+                status: "PENDING"
+                createdAt: "2026-04-01T10:00:00Z"
+                items:
+                  - id: 5
+                    orderId: 3
+                    songId: 1
+                    price: "1.29"
+                    song:
+                      id: 1
+                      title: "Blinding Lights"
+                      artist: "The Weeknd"
+        '400':
+          $ref: '#/components/responses/InvalidOrderInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get an order by ID
+      description: Owner or admin only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: A single order with items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Orders]
+      summary: Update order status
+      description: Owner or admin only. Completed orders cannot be updated.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, COMPLETED, CANCELLED]
+            example:
+              status: "COMPLETED"
+      responses:
+        '200':
+          description: Order updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid ID, invalid status, or order already completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSingle'
+              example:
+                error: "Cannot update a completed order"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Orders]
+      summary: Delete an order
+      description: Owner or admin only. Completed orders cannot be deleted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: Order deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Order deleted successfully"
+        '400':
+          description: Invalid ID or order already completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSingle'
+              example:
+                error: "Cannot delete a completed order"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /comments:
+    get:
+      tags: [Comments]
+      summary: Get all comments
+      description: Public. Filter by song using ?songId=.
+      parameters:
+        - name: songId
+          in: query
+          required: false
+          description: Filter comments by song ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+              example:
+                - id: 1
+                  userId: 1
+                  songId: 1
+                  body: "Absolute banger!"
+                  rating: 5
+                  createdAt: "2026-04-01T00:00:00Z"
+
+    post:
+      tags: [Comments]
+      summary: Post a comment
+      description: Authenticated users.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+            example:
+              songId: 1
+              body: "This is a great song!"
+              rating: 5
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+              example:
+                id: 5
+                userId: 1
+                songId: 1
+                body: "This is a great song!"
+                rating: 5
+                createdAt: "2026-04-01T12:00:00Z"
+        '400':
+          $ref: '#/components/responses/InvalidCommentInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+ 
+  /comments/{id}:
+    get:
+      tags: [Comments]
+      summary: Get a comment by ID
+      description: Public.
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: A single comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+ 
+    put:
+      tags: [Comments]
+      summary: Update a comment
+      description: Owner or admin only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdateInput'
+            example:
+              body: "Updated review — still a banger."
+              rating: 4
+      responses:
+        '200':
+          description: Comment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/InvalidCommentInput'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      description: Owner or admin only.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/resourceId'
+      responses:
+        '200':
+          description: Comment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Comment deleted successfully"
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+
+  schemas:
+    Song:
+      type: object
+      properties:
+        id:         { type: integer, readOnly: true, example: 1 }
+        title:      { type: string,  example: "Blinding Lights" }
+        artist:     { type: string,  example: "The Weeknd" }
+        album:      { type: string,  nullable: true, example: "After Hours" }
+        genre:      { type: string,  nullable: true, example: "Pop" }
+        price:      { type: string,  example: "1.29" }
+        durationS:  { type: integer, nullable: true, example: 200 }
+        createdAt:  { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
+
+    SongInput:
+      type: object
+      required: [title, artist, price]
+      properties:
+        title:      { type: string,  example: "New Song" }
+        artist:     { type: string,  example: "Some Artist" }
+        album:      { type: string,  example: "Some Album" }
+        genre:      { type: string,  example: "Pop" }
+        price:      { type: number,  example: 1.29 }
+        durationS:  { type: integer, example: 210 }
+
+    SongUpdateInput:
+      type: object
+      description: At least one field should be provided.
+      properties:
+        title:      { type: string,  example: "Updated Title" }
+        artist:     { type: string,  example: "Updated Artist" }
+        album:      { type: string,  example: "Updated Album" }
+        genre:      { type: string,  example: "Updated Genre" }
+        price:      { type: number,  example: 0.99 }
+        durationS:  { type: integer, example: 195 }
+
+    Order:
+      type: object
+      properties:
+        id:         { type: integer, readOnly: true, example: 1 }
+        userId:     { type: integer, readOnly: true, example: 1 }
+        totalPrice: { type: string,  example: "2.58" }
+        status:     { type: string,  enum: [PENDING, COMPLETED, CANCELLED], example: "PENDING" }
+        createdAt:  { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+
+    OrderItem:
+      type: object
+      properties:
+        id:       { type: integer, example: 1 }
+        orderId:  { type: integer, example: 1 }
+        songId:   { type: integer, example: 1 }
+        price:    { type: string,  example: "1.29" }
+        song:     { $ref: '#/components/schemas/Song' }
+
+    Comment:
+      type: object
+      properties:
+        id:        { type: integer, readOnly: true, example: 1 }
+        userId:    { type: integer, readOnly: true, example: 1 }
+        songId:    { type: integer, example: 1 }
+        body:      { type: string,  example: "Absolute banger!" }
+        rating:    { type: integer, nullable: true, minimum: 1, maximum: 5, example: 5 }
+        createdAt: { type: string,  format: date-time, readOnly: true, example: "2026-04-01T00:00:00Z" }
+
+    CommentInput:
+      type: object
+      required: [songId, body]
+      properties:
+        songId: { type: integer, example: 1 }
+        body:   { type: string,  example: "Great song!" }
+        rating: { type: integer, nullable: true, minimum: 1, maximum: 5, example: 5 }
+
+    CommentUpdateInput:
+      type: object
+      properties:
+        body:   { type: string,  example: "Updated review." }
+        rating: { type: integer, nullable: true, minimum: 1, maximum: 5, example: 4 }
+
+    AuthCredentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:    { type: string, format: email, example: "alice@test.com" }
+        password: { type: string, minLength: 8,  example: "alice1234" }
+
+    User:
+      type: object
+      properties:
+        id:    { type: integer, readOnly: true, example: 1 }
+        email: { type: string,  example: "alice@test.com" }
+        role:  { type: string,  enum: [USER, ADMIN], example: "USER" }
+
+    ErrorSingle:
+      type: object
+      properties:
+        error: { type: string }
+
+    ErrorArray:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+
+  parameters:
+    resourceId:
+      name: id
+      in: path
+      required: true
+      description: Resource ID (positive integer)
+      schema: { type: integer, minimum: 1, example: 1 }
+
+    search:
+      name: search
+      in: query
+      required: false
+      description: Filter songs by title or artist (case-insensitive)
+      schema: { type: string, example: "weeknd" }
+
+    genre:
+      name: genre
+      in: query
+      required: false
+      description: Filter by genre
+      schema: { type: string, example: "Pop" }
+
+    artist:
+      name: artist
+      in: query
+      required: false
+      description: Filter by artist name
+      schema: { type: string, example: "Dua Lipa" }
+
+    sortBy:
+      name: sortBy
+      in: query
+      required: false
+      description: "Field to sort by"
+      schema:
+        type: string
+        enum: [id, title, artist, price, createdAt]
+        default: id
+        example: "price"
+
+    order:
+      name: order
+      in: query
+      required: false
+      description: "Sort order: asc or desc"
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+        example: "asc"
+
+    offset:
+      name: offset
+      in: query
+      required: false
+      description: Number of records to skip (pagination)
+      schema: { type: integer, minimum: 0, default: 0, example: 0 }
+
+    limit:
+      name: limit
+      in: query
+      required: false
+      description: Max records to return (1–50)
+      schema: { type: integer, minimum: 1, maximum: 50, default: 10, example: 10 }
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorSingle' }
+          example: { error: "Song 999 not found" }
+
+    InvalidId:
+      description: ID is not a positive integer
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["ID must be a positive integer"] }
+
+    InvalidUserInput:
+      description: Invalid user input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["Email is required", "Password is required"] }
+
+    InvalidSongInput:
+      description: Invalid song input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["Title is required", "Price must be a positive number"] }
+
+    InvalidOrderInput:
+      description: Invalid order input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["songIds must be a non-empty array"] }
+
+    InvalidCommentInput:
+      description: Invalid comment input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["body is required", "rating must be an integer between 1 and 5"] }
+
+    InvalidQueryParams:
+      description: Invalid query parameters
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorArray' }
+          example: { errors: ["sortBy must be one of: id, title, artist, price, createdAt"] }
+
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorSingle' }
+          example: { error: "Not authenticated. Please provide a valid token." }
+
+    Forbidden:
+      description: Authenticated but not authorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorSingle' }
+          example: { error: "Forbidden: insufficient permission." }
+
+    Conflict:
+      description: Email already in use
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorSingle' }
+          example: { error: "Email has already been used" }
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
